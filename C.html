@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ווידג'ט חיפוש TommyMe</title>
+    <style>
+        .tommyme-search-widget {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            direction: rtl;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-container {
+            background: linear-gradient(135deg, #ff6b9d, #ffa8b8);
+            padding: 3px;
+            border-radius: 35px;
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .search-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(255, 107, 157, 0.35);
+        }
+
+        .search-inner {
+            background: white;
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            background: transparent;
+            color: #333;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #ff6b9d, #ff8fb3);
+            border: none;
+            padding: 12px 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 0 32px 32px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .search-btn:hover {
+            background: linear-gradient(135deg, #ff5c8a, #ff6b9d);
+        }
+
+        .results-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            margin-top: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .result-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-item:hover {
+            background: linear-gradient(135deg, #fff0f5, #ffeef0);
+            transform: translateX(-5px);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .result-item:first-child {
+            border-radius: 15px 15px 0 0;
+        }
+
+        .result-icon {
+            font-size: 1.2rem;
+            min-width: 30px;
+        }
+
+        .result-content {
+            flex: 1;
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+            font-size: 0.95rem;
+        }
+
+        .result-description {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .result-price {
+            color: #28a745;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .no-results {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            padding: 15px;
+            text-align: center;
+            color: #ff6b9d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ff6b9d;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .search-input {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .search-btn {
+                padding: 10px 15px;
+                font-size: 0.8rem;
+            }
+            
+            .tommyme-search-widget {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tommyme-search-widget" id="tommymeSearchWidget">
+        <div class="search-container">
+            <div class="search-inner">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="compactSearchInput"
+                    placeholder="🎁 חפש מתנות, רקמה, בלונים..."
+                    autocomplete="off"
+                >
+                <button class="search-btn" id="compactSearchBtn">
+                    <span>🔍</span>
+                    <span>חפש</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="results-dropdown" id="compactResultsDropdown">
+            <!-- Results will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        // TommyMe Products Data
+        const tommymeProducts = [
+            { 
+                title: "כיסוי לכרית רקום", 
+                description: "כיסוי לכרית עם רקמה אישית", 
+                category: "רקמה", 
+                price: "₹85",
+                icon: "🧵"
+            },
+            { 
+                title: "בלוני יום הולדת", 
+                description: "סט בלונים צבעוניים", 
+                category: "בלונים", 
+                price: "₹45",
+                icon: "🎈"
+            },
+            { 
+                title: "מארז מתנה לתינוק", 
+                description: "מארז מיוחד עם מוצרי תינוקות", 
+                category: "מארזים", 
+                price: "₹150",
+                icon: "👶"
+            },
+            { 
+                title: "עיצוב לחתונה", 
+                description: "חבילת עיצוב מלאה", 
+                category: "אירועים", 
+                price: "₹800",
+                icon: "💒"
+            },
+            { 
+                title: "רקמה על חולצה", 
+                description: "רקמה אישית על חולצה", 
+                category: "רקמה", 
+                price: "₹65",
+                icon: "👕"
+            },
+            { 
+                title: "בלוני הליום", 
+                description: "בלוני הליום עם הודעות", 
+                category: "בלונים", 
+                price: "₹35",
+                icon: "🎈"
+            }
+        ];
+
+        const compactSearchInput = document.getElementById('compactSearchInput');
+        const compactSearchBtn = document.getElementById('compactSearchBtn');
+        const compactResultsDropdown = document.getElementById('compactResultsDropdown');
